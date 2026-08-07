@@ -1,0 +1,38 @@
+# scratch / notebook files
+config.yml
+config.yaml
+example.py
+example.yml
+run.py
+test.py
+example/
+
+# python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# packaging
+*.egg-info/
+dist/
+build/
+*.egg
+
+# type checking
+.mypy_cache/
+.ruff_cache/
+
+# coverage
+.coverage
+htmlcov/
+
+# venv
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

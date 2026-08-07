@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "telebench"
+version = "0.1.0"
+description = "ASR robustness benchmark for telephony degradations"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "soundfile>=0.12",
+    "pyyaml>=6.0",
+    "jiwer>=3.0",
+    "openai>=1.0",
+    "requests>=2.31",
+    "rich>=13.0",
+]
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "pytest-cov", "ruff", "mypy", "pre-commit"]
+
+[project.scripts]
+telebench = "cli.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/dharshan/telebench"
+Repository = "https://github.com/dharshan/telebench"
+
+[tool.setuptools]
+py-modules = ["benchmark"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "dataloader*", "cli*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
