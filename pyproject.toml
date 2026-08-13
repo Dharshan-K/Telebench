@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "telebench"
-version = "0.1.0"
+version = "0.2.0"
 description = "ASR robustness benchmark for telephony degradations"
 readme = "README.md"
 license = {text = "MIT"}
@@ -22,18 +22,17 @@ dependencies = [
 dev = ["pytest>=7.0", "pytest-cov", "ruff", "mypy", "pre-commit"]
 
 [project.scripts]
-telebench = "cli.cli:main"
+telebench = "telebench.cli.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/dharshan/telebench"
 Repository = "https://github.com/dharshan/telebench"
 
-[tool.setuptools]
-py-modules = ["benchmark"]
-
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["core*", "dataloader*", "cli*"]
+include = ["telebench*"]
+
+[tool.setuptools.package-data]
+telebench = ["config.yaml", "example/**"]
 
 [tool.ruff]
 line-length = 100
