@@ -1,0 +1,36 @@
+dataset:
+  speech:
+    output_dir: example/dataset
+  noise:
+    output_dir: example/noise
+
+preprocess:
+  input_dir: example/dataset
+  output_dir: example/output/degraded
+
+noise_mixing:
+  input_dir: example/output/degraded
+  noise_dir: example/noise
+  output_dir: example/output/noisy
+  snr_db_min: 5
+  snr_db_max: 15
+
+evaluation:
+  endpoints:
+    - name: groq-whisper-large-v3
+      provider: openai
+      base_url: https://api.groq.com/openai/v1
+      api_key_env: GROQ_API_KEY
+      model: whisper-large-v3
+    - name: sarvam-saaras-v3
+      provider: sarvam
+      base_url: https://api.sarvam.ai/speech-to-text
+      api_key_env: SARVAM_API_KEY
+      model: saaras:v3
+  temperature: 0
+  response_format: verbose_json
+  language: ta
+  metrics: [wer, cer, mer, wil]
+  original_dir: example/dataset
+  degraded_dir: example/output/noisy
+  output_path: example/output/evaluation.json

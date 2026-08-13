@@ -1,0 +1,45 @@
+dataset:
+  speech:
+    type: huggingface
+    path: ai4bharat/Kathbath
+    subset: tamil
+    split: train
+    streaming: true
+    audio_column: audio_filepath
+    target_bytes: 20971520
+    output_dir: kathbath_train_data
+    token_env: HF_TOKEN
+  noise:
+    type: huggingface
+    path: FluidInference/musan
+    split: train
+    streaming: true
+    audio_column: audio
+    target_bytes: 20971520
+    output_dir: noise_data
+    token_env: HF_TOKEN
+
+preprocess:
+  input_dir: kathbath_train_data
+  output_dir: kathbath_filter_data
+
+noise_mixing:
+  input_dir: kathbath_filter_data
+  noise_dir: noise_data
+  output_dir: noisy_data
+  snr_db_min: 5
+  snr_db_max: 15
+
+evaluation:
+  endpoints:
+    - name: groq-whisper-large-v3
+      base_url: https://api.groq.com/openai/v1
+      api_key_env: GROQ_API_KEY
+      model: whisper-large-v3
+  temperature: 0
+  response_format: verbose_json
+  language: ta
+  metrics: [wer, cer, mer, wil]
+  original_dir: kathbath_train_data
+  degraded_dir: noisy_data
+  output_path: noisy_data/evaluation.json

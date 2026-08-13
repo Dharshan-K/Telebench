@@ -1,0 +1,28 @@
+[
+  {
+    "endpoint": "groq-whisper-large-v3",
+    "model": "whisper-large-v3",
+    "n": 2,
+    "skipped": 0,
+    "metrics": {
+      "wer": 0.8333333333333334,
+      "cer": 0.594059405940594,
+      "mer": 0.8333333333333334,
+      "wil": 0.9583333333333334
+    },
+    "latency_mean_s": 1.3029595162479382
+  },
+  {
+    "endpoint": "sarvam-saaras-v3",
+    "model": "saaras:v3",
+    "n": 2,
+    "skipped": 0,
+    "metrics": {
+      "wer": 0.7619047619047619,
+      "cer": 0.7105263157894737,
+      "mer": 0.6666666666666666,
+      "wil": 0.8674948240165632
+    },
+    "latency_mean_s": 1.5345827997498418
+  }
+]
