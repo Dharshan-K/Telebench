@@ -1,9 +1,15 @@
 import argparse
+import os
 import sys
+from importlib.resources import files
 
-from benchmark import Benchmark
+from ..benchmark import Benchmark
 
 DESCRIPTION = "Run the speech degradation, noise-mixing and ASR-evaluation benchmark pipeline."
+
+
+def warn(message):
+    print(f"WARNING: {message}")
 
 
 def build_parser():
@@ -52,6 +58,11 @@ def build_parser():
         help="Load and validate the config, then show its paths and endpoints.",
     )
 
+    subparsers.add_parser(
+        "default",
+        help="Run the full pipeline (degrade -> noise -> evaluate) using the config and audio bundled in the package.",
+    )
+
     return parser
 
 
@@ -94,39 +105,51 @@ def _select_endpoints(benchmark, requested):
     }
     missing = sorted(names - found)
     if missing:
-        raise SystemExit(f"Unknown endpoint(s): {missing}. Use 'telebench endpoints' to list them.")
+        warn(f"Unknown endpoint(s): {missing}, skipping.")
     return selected
 
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
-    benchmark = Benchmark(args.config)
+    try:
+        if args.command == "default":
+            config_path = files("telebench").joinpath("config.yaml")
+            os.chdir(os.path.dirname(str(config_path)))
+            benchmark = Benchmark("config.yaml")
+        else:
+            benchmark = Benchmark(args.config)
 
-    if args.command == "info":
-        _print_config(benchmark)
+        if args.command == "info":
+            _print_config(benchmark)
+            return 0
+
+        if args.command == "endpoints":
+            _print_endpoints(benchmark.config["evaluation"])
+            return 0
+
+        if args.command == "evaluate":
+            selected = _select_endpoints(benchmark, args.endpoint)
+            benchmark.config["evaluation"]["endpoints"] = selected
+            if not selected:
+                warn("no endpoints to evaluate.")
+                return 0
+
+        if args.command in ("eval", "default"):
+            print("Running degrade...")
+            benchmark.process("degrade")
+            print("Running noise mixing...")
+            benchmark.process("noise")
+            print("Running evaluation...")
+            benchmark.process("evaluate")
+        else:
+            print(f"Running {args.command}...")
+            benchmark.process(args.command)
+
+        print("Done.")
         return 0
-
-    if args.command == "endpoints":
-        _print_endpoints(benchmark.config["evaluation"])
+    except Exception as exc:
+        warn(str(exc))
         return 0
-
-    if args.command == "evaluate":
-        selected = _select_endpoints(benchmark, args.endpoint)
-        benchmark.config["evaluation"]["endpoints"] = selected
-
-    if args.command == "eval":
-        print("Running degrade...")
-        benchmark.process("degrade")
-        print("Running noise mixing...")
-        benchmark.process("noise")
-        print("Running evaluation...")
-        benchmark.process("evaluate")
-    else:
-        print(f"Running {args.command}...")
-        benchmark.process(args.command)
-
-    print("Done.")
-    return 0
 
 
 if __name__ == "__main__":

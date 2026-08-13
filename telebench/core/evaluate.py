@@ -9,7 +9,7 @@ from openai import OpenAI
 from rich.console import Console
 from rich.table import Table
 
-from dataloader.localloader import LocalLoader
+from ..dataloader.localloader import LocalLoader
 
 VALID_METRICS = {"wer", "cer", "mer", "wil"}
 
@@ -24,8 +24,17 @@ def _resolve_api_key(endpoint):
     key = os.environ.get("OPENAI_API_KEY")
     if key:
         return key
-    print("WARNING: no API key found, using placeholder (local servers only).")
-    return "not-needed"
+    print("WARNING: no API key found.")
+    return None
+
+
+def _api_key(endpoint):
+    env_name = endpoint.get("api_key_env")
+    if env_name:
+        key = os.environ.get(env_name)
+        if key:
+            return key
+    return os.environ.get("OPENAI_API_KEY")
 
 
 class BaseTranscriber(ABC):
@@ -142,7 +151,18 @@ class EvaluationRunner:
         self.metrics = [m for m in evaluation_cfg.get("metrics", ["wer", "cer"]) if m in VALID_METRICS]
 
     def run(self):
-        rows = [self._evaluate_endpoint(ep) for ep in self.cfg["endpoints"]]
+        rows = []
+        for endpoint in self.cfg["endpoints"]:
+            name = endpoint.get("name") or f"{endpoint['base_url']}:{endpoint['model']}"
+            if not _api_key(endpoint):
+                env_name = endpoint.get("api_key_env")
+                hint = f"set {env_name} or OPENAI_API_KEY" if env_name else "set OPENAI_API_KEY"
+                print(f"WARNING: no API key for endpoint '{name}' ({hint}). Skipping.")
+                continue
+            rows.append(self._evaluate_endpoint(endpoint))
+        if not rows:
+            print("WARNING: no endpoints evaluated. Configure an API key and try again.")
+            return rows
         self._print(rows)
         self._write_json(rows)
         return rows
