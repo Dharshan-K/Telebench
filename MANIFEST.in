@@ -1,4 +1,0 @@
-include telebench/config.yaml
-recursive-include telebench/example/dataset *.wav
-recursive-include telebench/example/noise *.wav
-recursive-include telebench/example/output *.wav
