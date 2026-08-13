@@ -4,9 +4,9 @@ import random
 import soundfile as sf
 import yaml
 
-from core.evaluate import EvaluationRunner, VALID_METRICS
-from core.process import Process
-from dataloader.localloader import LocalLoader
+from .core.evaluate import EvaluationRunner, VALID_METRICS
+from .core.process import Process
+from .dataloader.localloader import LocalLoader
 
 REQUIRED_SECTIONS = {"dataset", "preprocess", "noise_mixing", "evaluation"}
 
@@ -133,16 +133,27 @@ class Benchmark:
     def _process_degrade(self):
         preprocess = self.config["preprocess"]
         output_dir = preprocess["output_dir"]
-        for file in self.load():
-            proc = Process(
-                str(file),
-                normalize_scale=preprocess.get("normalize_scale", 32768),
-            )
-            proc.process()
-            proc.fourier_transform()
-            proc.mu_law()
-            out_path = os.path.join(output_dir, file.name)
-            sf.write(out_path, proc.get_data(), proc.sample_rate)
+        files = self.load()
+        if not files:
+            print(f"WARNING: no audio files in preprocess.input_dir: {preprocess['input_dir']}")
+            return
+        processed = 0
+        for file in files:
+            try:
+                proc = Process(
+                    str(file),
+                    normalize_scale=preprocess.get("normalize_scale", 32768),
+                )
+                proc.process()
+                proc.fourier_transform()
+                proc.mu_law()
+                out_path = os.path.join(output_dir, file.name)
+                sf.write(out_path, proc.get_data(), proc.sample_rate)
+                processed += 1
+            except Exception as exc:
+                print(f"WARNING: skipping {file.name}: {exc}")
+        if not processed:
+            print(f"WARNING: no files processed in {output_dir}")
 
     def _process_noise(self):
         noise_mixing = self.config["noise_mixing"]
@@ -161,18 +172,23 @@ class Benchmark:
             )
         input_files = [f for f in self._loader_for(input_dir)]
         if not input_files:
-            raise ValueError(
-                f"No audio files found in noise_mixing.input_dir: {input_dir}. "
-                "Run the 'degrade' step first."
-            )
+            print(f"WARNING: no audio files in noise_mixing.input_dir: {input_dir}")
+            return
+        processed = 0
         for file in self.load(input_dir):
-            noise_file = random.choice(noise_files)
-            out_path = os.path.join(output_dir, file.name)
-            proc = Process(
-                str(file),
-                noise_file=noise_file,
-                snr_db_min=noise_mixing["snr_db_min"],
-                snr_db_max=noise_mixing["snr_db_max"],
-            )
-            proc.process()
-            proc.add_noise(output_path=out_path)
+            try:
+                noise_file = random.choice(noise_files)
+                out_path = os.path.join(output_dir, file.name)
+                proc = Process(
+                    str(file),
+                    noise_file=noise_file,
+                    snr_db_min=noise_mixing["snr_db_min"],
+                    snr_db_max=noise_mixing["snr_db_max"],
+                )
+                proc.process()
+                proc.add_noise(output_path=out_path)
+                processed += 1
+            except Exception as exc:
+                print(f"WARNING: skipping {file.name}: {exc}")
+        if not processed:
+            print(f"WARNING: no files processed in {output_dir}")
