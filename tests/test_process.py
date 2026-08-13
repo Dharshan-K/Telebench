@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from core.process import Process
+from telebench.core.process import Process
 
 
 @pytest.fixture

@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 import soundfile as sf
 
-from benchmark import Benchmark
-from core import evaluate
+from telebench.benchmark import Benchmark
+from telebench.core import evaluate
 from fakes import FakeEvaluator
 
 

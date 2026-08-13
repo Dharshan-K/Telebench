@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from cli.cli import main
-from core import evaluate
+from telebench.cli.cli import main
+from telebench.core import evaluate
 from fakes import FakeEvaluator
 
 
@@ -35,10 +35,10 @@ def test_endpoints_lists_configured_endpoints(project, capsys):
     assert "fake-model" in out
 
 
-def test_unknown_endpoint_fails(project, capsys):
+def test_unknown_endpoint_warns(project, capsys):
     _, cfg_path = project
-    with pytest.raises(SystemExit, match="Unknown endpoint"):
-        main(["evaluate", "-e", "nope", "-c", str(cfg_path)])
+    assert main(["-c", str(cfg_path), "evaluate", "-e", "nope"]) == 0
+    assert "Unknown endpoint" in capsys.readouterr().out
 
 
 def test_degrate_writes_degraded_files(project, capsys):

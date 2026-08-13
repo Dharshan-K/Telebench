@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from core import evaluate
-from core.evaluate import (
+from telebench.core import evaluate
+from telebench.core.evaluate import (
     Evaluator,
     EvaluationRunner,
     OpenAITranscriber,
@@ -42,10 +42,10 @@ class TestResolveApiKey:
         monkeypatch.setenv("OPENAI_API_KEY", "openai-key")
         assert _resolve_api_key({}) == "openai-key"
 
-    def test_returns_placeholder_when_unset(self, monkeypatch):
+    def test_returns_none_when_unset(self, monkeypatch):
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
         monkeypatch.delenv("GROQ_API_KEY", raising=False)
-        assert _resolve_api_key({"api_key_env": "GROQ_API_KEY"}) == "not-needed"
+        assert _resolve_api_key({"api_key_env": "GROQ_API_KEY"}) is None
 
 
 class TestEvaluatorSelectsAdapter:

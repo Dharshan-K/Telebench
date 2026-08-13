@@ -1,4 +1,4 @@
-from dataloader.localloader import LocalLoader
+from telebench.dataloader.localloader import LocalLoader
 
 
 def test_yields_only_audio_files(tmp_path):
